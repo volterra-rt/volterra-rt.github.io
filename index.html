@@ -363,18 +363,20 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 const params = new URLSearchParams(location.search);
 const forcedP = params.has('p') ? THREE.MathUtils.clamp(parseFloat(params.get('p')), 0, 1) : null;
 const stillMode = params.has('still');
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isMobile = matchMedia('(pointer: coarse)').matches;
 
 const host = document.getElementById('bg');
 const loaderEl = document.getElementById('loader');
 document.getElementById('yr').textContent = new Date().getFullYear();
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+const renderer = new THREE.WebGLRenderer({ antialias: !isMobile, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(isMobile ? Math.min(devicePixelRatio, 1.15) : Math.min(devicePixelRatio, 1.75));
 renderer.setSize(innerWidth, innerHeight);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.08;
@@ -382,8 +384,10 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 host.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-const pmrem = new THREE.PMREMGenerator(renderer);
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+if (!isMobile) {
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+}
 
 const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.001, 200);
 
@@ -448,6 +452,70 @@ function collectParts(root) {
   return found;
 }
 
+function makeMaterial(transparent) {
+  const opts = { vertexColors: true, side: THREE.DoubleSide, transparent: true, depthWrite: !transparent };
+  if (isMobile) return new THREE.MeshLambertMaterial(opts);
+  return new THREE.MeshStandardMaterial({ ...opts, metalness: 0, roughness: 1 });
+}
+
+// Unisce le centinaia di primitive per pezzo in 1-2 mesh (opaca + trasparente),
+// portando le draw call da ~1200 a ~30. Colore e alpha finiscono nei vertex color.
+function optimizeGeometry(root) {
+  for (const part of collectParts(root)) {
+    const inv = new THREE.Matrix4().copy(part.matrixWorld).invert();
+    const opaque = [];
+    const trans = [];
+    const remove = [];
+    part.traverse((child) => {
+      if (!child.isMesh) return;
+      remove.push(child);
+      const geo = child.geometry.clone();
+      geo.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, child.matrixWorld));
+      if (!geo.attributes.normal) geo.computeVertexNormals();
+      for (const k of Object.keys(geo.attributes)) {
+        if (k !== 'position' && k !== 'normal') geo.deleteAttribute(k);
+      }
+      geo.morphAttributes = {};
+      geo.clearGroups();
+      if (!geo.index) {
+        const count = geo.attributes.position.count;
+        const arr = count > 65535 ? new Uint32Array(count) : new Uint16Array(count);
+        for (let i = 0; i < count; i++) arr[i] = i;
+        geo.setIndex(new THREE.BufferAttribute(arr, 1));
+      }
+      const mat = child.material;
+      const isTrans = mat.transparent || mat.opacity < 1;
+      const n = geo.attributes.position.count;
+      const size = isTrans ? 4 : 3;
+      const colors = new Float32Array(n * size);
+      const c = mat.color;
+      const a = isTrans ? mat.opacity : 1;
+      for (let i = 0; i < n; i++) {
+        colors[i * size] = c.r;
+        colors[i * size + 1] = c.g;
+        colors[i * size + 2] = c.b;
+        if (isTrans) colors[i * size + 3] = a;
+      }
+      geo.setAttribute('color', new THREE.BufferAttribute(colors, size));
+      (isTrans ? trans : opaque).push(geo);
+    });
+
+    for (const m of remove) {
+      m.geometry?.dispose();
+      (Array.isArray(m.material) ? m.material : [m.material]).forEach((x) => x?.dispose());
+      part.remove(m);
+    }
+    if (opaque.length) {
+      part.add(new THREE.Mesh(mergeGeometries(opaque, false), makeMaterial(false)));
+      opaque.forEach((g) => g.dispose());
+    }
+    if (trans.length) {
+      part.add(new THREE.Mesh(mergeGeometries(trans, false), makeMaterial(true)));
+      trans.forEach((g) => g.dispose());
+    }
+  }
+}
+
 function computeDirections() {
   if (!parts.length) return;
   scene.updateMatrixWorld(true);
@@ -479,6 +547,8 @@ function fitCamera() {
 }
 
 function setup() {
+  scene.updateMatrixWorld(true);
+  optimizeGeometry(modelRoot);
   scene.updateMatrixWorld(true);
   const box0 = new THREE.Box3().setFromObject(orient);
   modelSize.copy(box0.getSize(new THREE.Vector3()));
@@ -516,7 +586,10 @@ function addGroundShadow(size) {
   scene.add(mesh);
 }
 
+let _lastP = -1;
 function update(p) {
+  if (Math.abs(p - _lastP) < 1e-4) return;
+  _lastP = p;
   const fade = 1 - THREE.MathUtils.smoothstep(p, 0.42, 0.95);
   for (const pt of parts) {
     pt.obj.position.copy(pt.origPos).addScaledVector(pt.dir, p * visibleH * pt.factor);
