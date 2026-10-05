@@ -1,9 +1,470 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Homepage | Volterra Robotics Team</title>
-  </head>
-  <body>
-    <h1 style="width: 100%; text-align: center">Volterra Robotics Team</h1>
-  </body>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Volterra Robotics Team</title>
+<meta name="description" content="Volterra Robotics Team — il team di robotica del Liceo Scientifico Vito Volterra. Progetti basati su Arduino, ESP32 e Raspberry Pi." />
+<meta property="og:title" content="Volterra Robotics Team" />
+<meta property="og:description" content="Robotica, innovazione e rigore tecnico. Vincitori del premio Qualità del Progetto — Nazionali Cesena 2025." />
+<meta name="theme-color" content="#0a0d13" />
+<style>
+  :root {
+    --bg: #0a0d13;
+    --panel: rgba(13, 17, 24, .66);
+    --panel-strong: rgba(13, 17, 24, .86);
+    --border: rgba(120, 150, 200, .16);
+    --text: #e8eef7;
+    --muted: #94a3b8;
+    --accent: #4f8cff;
+    --accent-2: #22d3ee;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    color: var(--text);
+    background:
+      radial-gradient(1200px 700px at 75% -10%, rgba(79,140,255,.16), transparent 60%),
+      radial-gradient(900px 600px at 10% 110%, rgba(34,211,238,.10), transparent 60%),
+      var(--bg);
+    font: 16px/1.65 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #bg {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  }
+  #bg canvas { display: block; }
+
+  #shade {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background:
+      radial-gradient(120% 90% at 50% 45%, transparent 30%, rgba(10,13,19,.55) 100%);
+  }
+
+  #loader {
+    position: fixed; inset: 0; z-index: 60; display: grid; place-content: center; gap: 14px;
+    background: var(--bg); color: var(--muted); text-align: center;
+    font-size: 14px; letter-spacing: .04em; transition: opacity .6s ease;
+  }
+  #loader.hide { opacity: 0; pointer-events: none; }
+  .spin {
+    width: 42px; height: 42px; margin: 0 auto; border-radius: 50%;
+    border: 3px solid rgba(120,150,200,.2); border-top-color: var(--accent);
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  header.nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 40;
+    display: flex; align-items: center; gap: 18px;
+    padding: 14px clamp(16px, 4vw, 44px);
+    background: linear-gradient(180deg, rgba(10,13,19,.85), rgba(10,13,19,0));
+    backdrop-filter: blur(10px);
+  }
+  .brand { font-weight: 800; letter-spacing: .02em; margin-right: auto; }
+  .brand span { color: var(--accent); }
+  nav.links { display: flex; gap: 6px; flex-wrap: wrap; }
+  nav.links a {
+    color: var(--muted); text-decoration: none; font-size: 14px;
+    padding: 7px 12px; border-radius: 999px; transition: color .2s, background .2s;
+  }
+  nav.links a:hover { color: var(--text); background: rgba(120,150,200,.12); }
+
+  main { position: relative; z-index: 10; }
+  section { padding: clamp(72px, 12vh, 150px) clamp(20px, 6vw, 90px); }
+  .wrap { max-width: 1060px; margin: 0 auto; }
+
+  .reveal { opacity: 0; transform: translateY(26px); transition: opacity .8s ease, transform .8s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  .eyebrow {
+    display: inline-block; font-size: 12px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--accent-2); border: 1px solid var(--border); border-radius: 999px;
+    padding: 6px 14px; margin-bottom: 22px; background: rgba(34,211,238,.06);
+  }
+
+  #home {
+    min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+    text-align: center;
+  }
+  #home h1 {
+    font-size: clamp(42px, 9vw, 104px); line-height: .98; margin: 0 0 18px;
+    letter-spacing: -.02em; font-weight: 800;
+    background: linear-gradient(180deg, #fff, #a9c2e8); -webkit-background-clip: text;
+    background-clip: text; color: transparent;
+  }
+  #home p.lead { max-width: 680px; margin: 0 auto 30px; color: #c5d2e6; font-size: clamp(16px, 2.2vw, 20px); }
+  .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-block; text-decoration: none; font-weight: 600; font-size: 15px;
+    padding: 12px 22px; border-radius: 999px; border: 1px solid var(--border);
+    color: var(--text); background: rgba(120,150,200,.08); transition: transform .2s, background .2s;
+  }
+  .btn:hover { transform: translateY(-2px); background: rgba(120,150,200,.16); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #04101f; }
+  .btn.primary:hover { background: #6aa0ff; }
+  .hint { margin-top: 46px; color: var(--muted); font-size: 13px; }
+  .hint b { color: var(--text); }
+
+  .band {
+    background: linear-gradient(180deg, transparent, var(--panel-strong) 8%, var(--panel-strong) 92%, transparent);
+    backdrop-filter: blur(7px);
+    border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  }
+
+  h2 { font-size: clamp(28px, 4.4vw, 46px); margin: 0 0 10px; letter-spacing: -.01em; }
+  .sub { color: var(--muted); max-width: 720px; margin: 0 0 20px; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 18px;
+    padding: clamp(20px, 3vw, 32px); box-shadow: 0 20px 50px rgba(0,0,0,.35);
+  }
+  .card + .card { margin-top: 18px; }
+  .card h3 { margin: 0 0 8px; font-size: 21px; }
+  .card p { margin: 0 0 12px; color: #c5d2e6; }
+  .card p:last-child { margin-bottom: 0; }
+
+  .pill {
+    display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; color: #06131f; background: linear-gradient(90deg, var(--accent), var(--accent-2));
+    border-radius: 999px; padding: 5px 12px; margin-bottom: 14px;
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; margin-top: 26px; }
+  .project { display: flex; flex-direction: column; height: 100%; }
+  .project .more { margin-top: auto; padding-top: 14px; }
+  .link {
+    color: var(--accent-2); text-decoration: none; border-bottom: 1px solid rgba(34,211,238,.35);
+    font-weight: 600; font-size: 14px;
+  }
+  .link:hover { border-bottom-color: var(--accent-2); }
+  .award { color: #ffd479; font-size: 13px; font-weight: 600; margin-top: 6px; }
+  .soon { color: var(--muted); font-style: italic; }
+
+  .contact { display: grid; gap: 12px; margin-top: 22px; }
+  .contact a {
+    display: flex; align-items: center; gap: 14px; text-decoration: none; color: var(--text);
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px 20px; transition: transform .2s, border-color .2s;
+  }
+  .contact a:hover { transform: translateX(4px); border-color: rgba(120,150,200,.4); }
+  .contact .k { color: var(--muted); width: 92px; font-size: 13px; text-transform: uppercase; letter-spacing: .08em; }
+  .contact .v { font-weight: 600; }
+
+  footer {
+    position: relative; z-index: 10; text-align: center; color: var(--muted);
+    padding: 40px 20px 60px; font-size: 13px; border-top: 1px solid var(--border);
+    background: var(--panel-strong);
+  }
+  footer b { color: var(--text); }
+
+  @media (max-width: 640px) {
+    nav.links a { padding: 6px 9px; font-size: 13px; }
+    .brand { font-size: 15px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { transition: none; opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="shade"></div>
+
+<header class="nav">
+  <div class="brand">Volterra <span>Robotics</span> Team</div>
+  <nav class="links">
+    <a href="#home">Home</a>
+    <a href="#chi-siamo">Chi siamo</a>
+    <a href="#progetti">Progetti</a>
+    <a href="#contatti">Contatti</a>
+  </nav>
+</header>
+
+<main>
+  <section id="home">
+    <div class="wrap">
+      <span class="eyebrow reveal">Liceo Scientifico Vito Volterra</span>
+      <h1 class="reveal">Volterra<br>Robotics Team</h1>
+      <p class="lead reveal">Applichiamo la teoria alla pratica costruendo robot con Arduino, ESP32 e Raspberry&nbsp;Pi. Innovazione giovanile e rigore tecnico.</p>
+      <div class="cta reveal">
+        <a class="btn primary" href="#progetti">Scopri i progetti</a>
+        <a class="btn" href="#contatti">Contattaci</a>
+      </div>
+      <p class="hint reveal">Scorri per far scomporre la <b>Teca</b> nei suoi componenti.</p>
+    </div>
+  </section>
+
+  <section id="chi-siamo" class="band">
+    <div class="wrap">
+      <span class="eyebrow reveal">About us</span>
+      <h2 class="reveal">Chi siamo?</h2>
+      <div class="card reveal">
+        <p>Siamo il Volterra Robotics Team, il team di robotica del Liceo Scientifico Vito Volterra. La nostra missione è applicare le conoscenze teoriche allo sviluppo pratico di progetti basati su Arduino, ESP32 e Raspberry&nbsp;Pi, curando sia l'hardware che il software.</p>
+        <p>Siamo nati nell'estate del 2024 e abbiamo subito ottenuto un risultato significativo: la vittoria del premio <b>&laquo;Qualità del Progetto&raquo;</b> alle Nazionali di Cesena 2025. Il nostro team è sinonimo di innovazione giovanile e rigore tecnico, pronto ad affrontare sfide complesse e a trasformare la passione per la robotica in soluzioni concrete e competitive.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="progetti" class="band">
+    <div class="wrap">
+      <span class="eyebrow reveal">Our projects</span>
+      <h2 class="reveal">I nostri progetti</h2>
+      <p class="sub reveal">I nostri progetti dimostrano la nostra competenza nello sviluppo di soluzioni complete, bilanciando complessità tecnica e applicazione pratica.</p>
+
+      <div class="grid">
+        <article class="card project reveal">
+          <span class="pill">Vincitore Cesena 2025</span>
+          <h3>Volterra Remote Farmer</h3>
+          <p>Dispositivo robotico in grado di misurare parametri relativi alla salute di una pianta o del terreno: umidità e luce ricevuta. Invia un'immagine da una fotocamera all'applicazione e permette di annaffiare la pianta a distanza, in modo manuale o automatico, con elevata personalizzazione.</p>
+          <p>Un sistema smart per la cura e il monitoraggio delle piante, con gestione completa da remoto e feed live tramite app: irrigazione e lettura dei dati da qualsiasi parte del mondo.</p>
+          <p class="award">Premio &laquo;Qualità del Progetto&raquo; — Nazionali Cesena 2025</p>
+          <div class="more"><a class="link" href="https://youtu.be/7VUqzprzPzo" target="_blank" rel="noopener">Guarda il video su YouTube →</a></div>
+        </article>
+
+        <article class="card project reveal">
+          <span class="pill">Genova &amp; Maker Faire Roma 2025</span>
+          <h3>Volterra Blue Sentinels</h3>
+          <p>Una boa capace di misurare parametri relativi all'acqua e all'atmosfera: torbidità e solidi disciolti, altezza delle onde, temperatura e pressione atmosferica, velocità del vento. I dati vengono inviati a un sito dedicato con un grafico per ogni parametro.</p>
+          <p>Una boa di monitoraggio ambientale per le acque, che raccoglie dati in tempo reale (ogni 10 secondi). È totalmente autonoma grazie all'alimentazione a pannelli solari.</p>
+          <p class="award">Presentato a Genova e al Maker Faire di Roma 2025</p>
+          <div class="more"><a class="link" href="https://youtu.be/9MDw-AIH6FY" target="_blank" rel="noopener">Guarda il video su YouTube →</a></div>
+        </article>
+
+        <article class="card project reveal">
+          <span class="pill">In arrivo</span>
+          <h3>Volterra Art Sentinel</h3>
+          <p class="soon">Descrizione non ancora disponibile.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="contatti" class="band">
+    <div class="wrap">
+      <span class="eyebrow reveal">Contacts</span>
+      <h2 class="reveal">Contatti</h2>
+      <p class="sub reveal">Vuoi saperne di più o collaborare con noi? Scrivici.</p>
+      <div class="contact reveal">
+        <a href="mailto:problemsolving.robotica@gmail.com">
+          <span class="k">Email</span>
+          <span class="v">problemsolving.robotica@gmail.com</span>
+        </a>
+        <a href="https://www.instagram.com/volterra_robotics_team" target="_blank" rel="noopener">
+          <span class="k">Instagram</span>
+          <span class="v">@volterra_robotics_team</span>
+        </a>
+        <a href="https://www.youtube.com/@volterra_robotics_team" target="_blank" rel="noopener">
+          <span class="k">YouTube</span>
+          <span class="v">Volterra Robotics Team</span>
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <b>Volterra Robotics Team</b> — Liceo Scientifico Vito Volterra · dal 2024
+</footer>
+
+<div id="loader">
+  <div class="spin"></div>
+  <div>Carico il modello 3D…</div>
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+const params = new URLSearchParams(location.search);
+const forcedP = params.has('p') ? THREE.MathUtils.clamp(parseFloat(params.get('p')), 0, 1) : null;
+const stillMode = params.has('still');
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const host = document.getElementById('bg');
+const loaderEl = document.getElementById('loader');
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+host.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.001, 200);
+
+scene.add(new THREE.HemisphereLight(0xbcd2ff, 0x0a0d12, 1.5));
+const key = new THREE.DirectionalLight(0xffffff, 2.6); key.position.set(0.7, 1.1, 0.9); scene.add(key);
+const rim = new THREE.DirectionalLight(0x66a3ff, 1.4); rim.position.set(-0.9, 0.3, -0.7); scene.add(rim);
+
+const center = new THREE.Group();
+const orient = new THREE.Group();
+const modelRoot = new THREE.Group();
+orient.add(modelRoot);
+center.add(orient);
+scene.add(center);
+orient.rotation.x = -Math.PI / 2;
+
+let parts = [];
+let visibleH = 1;
+let modelSpan = 1;
+let active = false;
+
+const _q = new THREE.Quaternion();
+
+function isPartGroup(o) {
+  return o.children && o.children.length > 0 && o.children.every((c) => c.isMesh);
+}
+function rnd(seed) {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
+
+function prepPart(o, i) {
+  const parentInv = new THREE.Matrix4().copy(o.parent.matrixWorld).invert();
+  const wc = new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3());
+
+  const cam = wc.clone().applyMatrix4(camera.matrixWorldInverse);
+  const d = new THREE.Vector3(cam.x, cam.y, 0);
+  if (d.lengthSq() < 1e-6) {
+    const a = i * 2.399963;
+    d.set(Math.cos(a), Math.sin(a), 0);
+  }
+  d.normalize();
+
+  const worldDir = d.transformDirection(camera.matrixWorld);
+  const localDir = worldDir.transformDirection(parentInv);
+
+  const maxDist = visibleH * (1.15 + 0.6 * rnd(i + 1));
+  const axis = new THREE.Vector3(rnd(i + 2) * 2 - 1, rnd(i + 3) * 2 - 1, rnd(i + 4) * 2 - 1).normalize();
+  const spin = (0.5 + 0.7 * rnd(i + 5)) * (rnd(i + 6) > 0.5 ? 1 : -1);
+
+  const mats = [];
+  o.traverse((n) => {
+    if (!n.isMesh) return;
+    (Array.isArray(n.material) ? n.material : [n.material]).forEach((m) => {
+      m.transparent = true;
+      m.userData.baseOpacity = m.opacity;
+      mats.push(m);
+    });
+  });
+
+  return { obj: o, origPos: o.position.clone(), origQuat: o.quaternion.clone(), localDir, maxDist, axis, spin, mats };
+}
+
+function collectParts(root) {
+  const found = [];
+  root.traverse((o) => { if (isPartGroup(o)) found.push(o); });
+  return found;
+}
+
+function setup() {
+  scene.updateMatrixWorld(true);
+  const box0 = new THREE.Box3().setFromObject(orient);
+  const c0 = box0.getCenter(new THREE.Vector3());
+  orient.position.sub(c0);
+  scene.updateMatrixWorld(true);
+
+  const box = new THREE.Box3().setFromObject(center);
+  const size = box.getSize(new THREE.Vector3());
+  modelSpan = Math.max(size.x, size.y, size.z) || 1;
+
+  const fov = THREE.MathUtils.degToRad(camera.fov);
+  const camDist = (modelSpan / 2) / Math.tan(fov / 2) * 1.55;
+  camera.position.copy(new THREE.Vector3(0.65, 0.45, 1).normalize().multiplyScalar(camDist));
+  camera.lookAt(0, 0, 0);
+  camera.updateMatrixWorld(true);
+
+  visibleH = 2 * Math.tan(fov / 2) * camDist;
+
+  parts = collectParts(modelRoot).map((o, i) => prepPart(o, i));
+  active = true;
+  loaderEl.classList.add('hide');
+}
+
+function update(p) {
+  for (const pt of parts) {
+    const travel = p * pt.maxDist;
+    pt.obj.position.copy(pt.origPos).addScaledVector(pt.localDir, travel);
+    _q.setFromAxisAngle(pt.axis, p * pt.spin * 2.2);
+    pt.obj.quaternion.copy(pt.origQuat).multiply(_q);
+    const fade = 1 - THREE.MathUtils.smoothstep(p, 0.5, 1.0);
+    for (const m of pt.mats) m.opacity = m.userData.baseOpacity * fade;
+  }
+}
+
+function scrollProgress() {
+  const max = document.documentElement.scrollHeight - innerHeight;
+  return max > 0 ? THREE.MathUtils.clamp(scrollY / max, 0, 1) : 0;
+}
+
+let target = 0;
+let current = 0;
+addEventListener('scroll', () => { target = scrollProgress(); }, { passive: true });
+
+function tick(t) {
+  requestAnimationFrame(tick);
+  const time = t * 0.001;
+  if (!reduceMotion) {
+    center.rotation.y = time * (Math.PI * 2 / 90); // un giro completo in ~90 s
+    center.position.y = Math.sin(time * 0.5) * modelSpan * 0.01;
+  }
+  current += (target - current) * 0.09;
+  update(forcedP != null ? forcedP : current);
+  renderer.render(scene, camera);
+}
+
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  if (stillMode) renderer.render(scene, camera);
+});
+
+new GLTFLoader().load('Teca_edited.glb',
+  (gltf) => {
+    modelRoot.add(gltf.scene);
+    setup();
+    target = scrollProgress();
+    current = target;
+    update(forcedP != null ? forcedP : target);
+    if (stillMode) {
+      renderer.render(scene, camera);
+      requestAnimationFrame(() => renderer.render(scene, camera));
+    }
+  },
+  undefined,
+  (err) => {
+    console.error(err);
+    loaderEl.classList.add('hide');
+  }
+);
+
+if (!stillMode) tick(0);
+
+const io = new IntersectionObserver((entries) => {
+  entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+if (stillMode) document.querySelectorAll('.reveal').forEach((el) => el.classList.add('in'));
+</script>
+</body>
 </html>
