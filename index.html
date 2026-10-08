@@ -33,8 +33,14 @@
     font-size: 16px;
     line-height: 1.55;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-optical-sizing: auto;
+    text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
   }
   a { color: inherit; }
+  a, button { touch-action: manipulation; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 
   #bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
   #bg canvas { display: block; }
@@ -52,21 +58,26 @@
     border-bottom: 1px solid transparent;
   }
   header.nav.solid {
-    background: rgba(15,15,14,.84);
-    backdrop-filter: blur(8px);
+    background: rgba(15,15,14,.72);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+    backdrop-filter: blur(22px) saturate(160%);
     border-bottom-color: var(--line);
     padding-top: 14px; padding-bottom: 14px;
   }
-  .brand { margin-right: auto; display: flex; align-items: center; gap: 11px; text-decoration: none; }
+  .brand { margin-right: auto; display: flex; align-items: center; gap: 11px; text-decoration: none;
+    transition: opacity .14s ease, transform .12s ease; }
+  .brand:active { opacity: .7; transform: scale(.98); }
   .brand .logo { width: 34px; height: 34px; border-radius: 50%; display: block; }
   .brand .sub { font-size: 10px; letter-spacing: .28em; text-transform: uppercase; color: var(--muted); }
   nav.links { display: flex; gap: clamp(10px, 2.5vw, 34px); }
   nav.links a {
     text-decoration: none; color: var(--muted);
     font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
-    padding-bottom: 3px; border-bottom: 1px solid transparent; transition: color .2s, border-color .2s;
+    padding-bottom: 3px; border-bottom: 1px solid transparent;
+    transition: color .18s ease, border-color .18s ease, opacity .12s ease;
   }
   nav.links a:hover, nav.links a.active { color: var(--accent); border-bottom-color: var(--accent); }
+  nav.links a:active { opacity: .55; }
 
   main { position: relative; z-index: 10; }
   section { padding: clamp(90px, 15vh, 190px) var(--pad); }
@@ -82,7 +93,7 @@
 
   h2 { font-size: clamp(30px, 6vw, 66px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 34px; font-weight: 700; max-width: 16ch; }
 
-  .reveal { opacity: 0; transform: translateY(22px); transition: opacity .9s ease, transform .9s ease; }
+  .reveal { opacity: 0; transform: translateY(26px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); will-change: transform, opacity; }
   .reveal.in { opacity: 1; transform: none; }
 
   /* ---- hero ---- */
@@ -102,7 +113,7 @@
     margin: 0 0 26px; font-weight: 700;
     text-shadow: 0 2px 34px rgba(0,0,0,.5);
   }
-  h1 .light { display: block; font-weight: 300; color: rgba(126,215,214,.42); }
+  h1 .light { display: block; font-weight: 300; color: rgba(126,215,214,.66); }
   .hero-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
   .hero-foot p { max-width: 46ch; margin: 0; color: #cbcac5; text-shadow: 0 1px 16px rgba(0,0,0,.55); }
   .hero-scroll { color: var(--muted); white-space: nowrap; }
@@ -110,9 +121,11 @@
   .btnrow { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 26px; }
   .btn {
     text-decoration: none; font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
-    padding: 13px 24px; border: 1px solid var(--ink); border-radius: 999px; transition: background .2s, color .2s;
+    padding: 13px 24px; border: 1px solid var(--ink); border-radius: 999px;
+    transition: background .18s ease, color .18s ease, border-color .18s ease, transform .12s ease;
   }
   .btn:hover { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn:active { transform: scale(.97); }
   .btn.solid { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
   .btn.solid:hover { background: #6ad9d9; border-color: #6ad9d9; }
 
@@ -140,18 +153,22 @@
     display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
     font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
     border-bottom: 1px solid var(--accent); padding-bottom: 3px;
+    transition: color .18s ease, border-color .18s ease, opacity .12s ease;
   }
   .link:hover { color: var(--accent); border-color: var(--accent); }
+  .link:active { opacity: .6; }
 
   /* ---- contacts ---- */
   .clist { border-top: 1px solid var(--line-strong); }
   .contact {
     display: grid; grid-template-columns: 180px 1fr; gap: 20px; align-items: center;
     padding: 22px 0; border-bottom: 1px solid var(--line); text-decoration: none;
+    transition: opacity .14s ease;
   }
   .contact .k { color: var(--muted); }
-  .contact .v { font-size: clamp(18px, 2.4vw, 28px); font-weight: 600; letter-spacing: -.01em; transition: padding-left .25s ease; }
+  .contact .v { font-size: clamp(18px, 2.4vw, 28px); font-weight: 600; letter-spacing: -.01em; transition: padding-left .28s cubic-bezier(.22,1,.36,1), color .18s ease; }
   .contact:hover .v { padding-left: 12px; color: var(--accent); }
+  .contact:active { opacity: .6; }
 
   footer {
     position: relative; z-index: 10; background: var(--paper);
@@ -182,7 +199,7 @@
     .hero-mark { text-align: left; }
     .hero-mark b { font-size: 12px; }
     h1 { font-size: clamp(42px, 14vw, 96px); text-shadow: 0 2px 22px rgba(0,0,0,.8); }
-    h1 .light { color: rgba(242,241,236,.6); }
+    h1 .light { color: rgba(126,215,214,.8); }
   }
   @media (max-width: 560px) {
     nav.links { gap: 12px; }
@@ -191,7 +208,11 @@
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
-    .reveal { transition: none; opacity: 1; transform: none; }
+    .reveal { transition: opacity .3s ease; transform: none; }
+    .btn, .link, .contact, .contact .v, .reveal { transition-duration: .15s; }
+  }
+  @media (prefers-reduced-transparency: reduce) {
+    header.nav.solid { background: var(--paper); -webkit-backdrop-filter: none; backdrop-filter: none; }
   }
 </style>
 </head>
@@ -616,14 +637,18 @@ let target = 0;
 let current = 0;
 addEventListener('scroll', () => { target = scrollProgress(); }, { passive: true });
 
+let prevT = 0;
 function tick(t) {
   requestAnimationFrame(tick);
   const time = t * 0.001;
+  const dt = prevT ? Math.min((t - prevT) / 1000, 0.05) : 0.016;
+  prevT = t;
   if (!reduceMotion) {
     center.rotation.y = time * (Math.PI * 2 / 90);
     center.position.y = Math.sin(time * 0.5) * modelSpan * 0.01;
   }
-  current += (target - current) * 0.09;
+  const k = 1 - Math.exp(-dt / 0.12); // frame-rate independent smoothing
+  current += (target - current) * k;
   update(forcedP != null ? forcedP : current);
   renderer.render(scene, camera);
 }
